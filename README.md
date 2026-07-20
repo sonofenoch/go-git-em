@@ -1,5 +1,5 @@
 # Go "Git" Em!
-A git reimplimentation using golang. A go "git" if you will...
+A git reimplimentation using golang
 
 ## Goal
 The goal was to create a simple implimentation of the core concept of git.
