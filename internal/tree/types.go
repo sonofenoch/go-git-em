@@ -1,10 +1,16 @@
 package tree
 
+import "github.com/sonofenoch/go-git-em/internal/object"
+
+type TreeEntry struct {
+	FileMode string
+	Filename string
+	Obj      object.Object
+}
 type Tree struct {
-	Files      map[string]string
-	Subfolders map[string]*Tree
+	Entries []TreeEntry
 }
 
 func NewTree() *Tree {
-	return &Tree{Files: map[string]string{}, Subfolders: map[string]*Tree{}}
+	return &Tree{Entries: []TreeEntry{}}
 }

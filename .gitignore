@@ -1,3 +1,9 @@
+# Go files
 go.sum
+
+# executables
 gge
 !cmd/gge
+
+# .gogit files
+.gogit

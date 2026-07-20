@@ -11,5 +11,6 @@ type Blob struct {
 }
 
 type Commit struct {
+	CommitMessage string
 	Object
 }

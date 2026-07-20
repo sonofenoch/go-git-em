@@ -29,6 +29,7 @@ Flags:
 
 }
 
+// TODO: Fix object representation. Object should not be struct. Continue working on git_commit
 func main() {
 	if len(os.Args) == 1 {
 		printHelp()
