@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/sonofenoch/go-git-em/internal/git_add"
+	"github.com/sonofenoch/go-git-em/internal/git_commit"
 	"github.com/sonofenoch/go-git-em/internal/git_init"
 	"github.com/sonofenoch/go-git-em/internal/git_status"
 )
@@ -59,7 +60,10 @@ func main() {
 			panic(err)
 		}
 	case "commit":
-		fmt.Printf("TODO\n")
+		err := git_commit.Commit()
+		if err != nil {
+			panic(err)
+		}
 	case "push":
 		fmt.Printf("TODO\n")
 	}

@@ -24,7 +24,6 @@ func Create_gogit(branch string) error {
 	file_contents := map[string]string{
 		"HEAD":        fmt.Sprintf("ref: refs/heads/%s", branch),
 		"description": "Unnamed repository; edit this file 'description' to name the repository.",
-		"config":      "TODO FILL ME IN",
 	}
 
 	gogit_dirs := []string{"hooks", "info", "objects", "objects/info", "objects/pack", "refs", "refs/heads", "refs/tags"}
@@ -47,7 +46,7 @@ func Create_gogit(branch string) error {
 }
 
 func init_file(filename string, content string) error {
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0755)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 	if err != nil {
 		return fmt.Errorf("could not open %s", filename)
 	}

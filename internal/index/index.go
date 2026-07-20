@@ -47,15 +47,20 @@ func AddFile(i *Index, path, hash string) error {
 	if err != nil {
 		return err
 	}
-	if !EntryInIndex(ie, i.Entries) {
+	if PathInIndex(i, path) {
+		if !EntryInIndex(i, ie) {
+			ie_idx := GetEntryIndex(i, path)
+			i.Entries[ie_idx] = *ie
+		}
+	} else {
 		i.Entries = append(i.Entries, *ie)
-		i.CurrentStage = i.CurrentStage + 1 // increment Index current stage
 	}
+
 	return nil
 }
 
-func EntryInIndex(to_add *IndexEntry, entries []IndexEntry) bool {
-	return slices.ContainsFunc(entries, func(ie IndexEntry) bool {
+func EntryInIndex(i *Index, to_add *IndexEntry) bool {
+	return slices.ContainsFunc(i.Entries, func(ie IndexEntry) bool {
 		return ie.Equal(*to_add)
 	})
 }
@@ -67,14 +72,17 @@ func PathInIndex(i *Index, path string) bool {
 }
 
 func GetEntry(i *Index, path string) *IndexEntry {
-	ie_idx := slices.IndexFunc(i.Entries, func(ie IndexEntry) bool {
-		return ie.Path == path
-	})
-
+	ie_idx := GetEntryIndex(i, path)
 	if ie_idx != -1 {
 		return &i.Entries[ie_idx]
 	}
 	return nil
+}
+
+func GetEntryIndex(i *Index, path string) int {
+	return slices.IndexFunc(i.Entries, func(ie IndexEntry) bool {
+		return ie.Path == path
+	})
 }
 
 func IsChanged(ie *IndexEntry, path string) bool {
