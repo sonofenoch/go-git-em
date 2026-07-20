@@ -7,12 +7,18 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sonofenoch/go-git-em/internal/git_config"
 	"github.com/sonofenoch/go-git-em/internal/index"
 )
 
 var NothingToCommit = errors.New("nothing to commit, working tree clean")
 
 func Status() error {
+	config, err := git_config.GetConfig()
+	if err != nil {
+		return err
+	}
+
 	i, err := index.Read()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -58,8 +64,8 @@ func Status() error {
 		return err
 	}
 
-	fmt.Printf("on branch {BRANCH_NAME}\n")                     // TODO: make global branch
-	fmt.Printf("your branch is {?UPTODATE?} with {REMOTE}\n\n") // TODO: make remote
+	fmt.Printf("on branch %s\n", config.Init.DefaultBranch)          // TODO: make global branch
+	fmt.Printf("your branch is {?UPTODATE?} with origin/master\n\n") // TODO: make remote
 
 	fmt.Printf("Changes to be committed:\n\n")
 	for path, status := range staged {

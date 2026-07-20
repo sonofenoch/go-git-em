@@ -1,1 +1,23 @@
-TODO FILL ME IN
+{
+  "core": {
+    "editor": "nvim"
+  },
+  "user": {
+    "username": "sonofenoch",
+    "name": "Timothy J Cain",
+    "email": "notgivingyoumyemail@gmail.com"
+  },
+  "init": {
+    "defaultBranch": "master"
+  },
+  "remote": [{
+    "name": "origin",
+    "url": "git@github.com:sonofenoch/go-git-em.git",
+    "fetch": "+refs/heads/*:refs/remotes/origin/*"
+  }],
+  "branch": [{
+    "name": "master",
+    "remote": "origin",
+	  "merge": "refs/heads/master"
+  }]
+}

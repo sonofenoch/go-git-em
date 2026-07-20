@@ -13,7 +13,7 @@ func Add(paths []string) error {
 		if err != nil {
 			return nil
 		}
-		object.WriteBlob(path, file_hash)
+		object.WriteBlob(object.Blob{Filename: path, Object: object.Object{Type: "blob", Hash: file_hash}})
 		index.AddFile(i, path, file_hash)
 	}
 
