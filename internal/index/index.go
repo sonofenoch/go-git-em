@@ -21,6 +21,12 @@ func GenerateEntry(path, hash string, stage int) (*IndexEntry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not get %s flags: %w", path, err)
 	}
+	var mode string
+	if fi.IsDir() {
+		mode = "0400000"
+	} else {
+		mode = fmt.Sprintf("0100%o", fi.Mode().Perm())
+	}
 
 	ie := IndexEntry{
 		FileMetadata: FileMetadata{
@@ -28,7 +34,7 @@ func GenerateEntry(path, hash string, stage int) (*IndexEntry, error) {
 			Mtime:  fi.ModTime().UTC(),
 			Device: stats.Dev,
 			Inode:  stats.Ino,
-			Mode:   fi.Mode().String(),
+			Mode:   mode,
 			Uid:    stats.Uid,
 			Gid:    stats.Gid,
 			Size:   fi.Size(),

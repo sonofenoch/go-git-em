@@ -2,16 +2,17 @@ package git_commit
 
 import (
 	"fmt"
-	"reflect"
 
+	"github.com/sonofenoch/go-git-em/internal/files"
 	"github.com/sonofenoch/go-git-em/internal/index"
 	"github.com/sonofenoch/go-git-em/internal/tree"
 )
 
 func Commit() error {
-	tree1 := tree.BuildTree(index.GetIndex())
-	tree2 := tree.BuildTree(index.GetIndex())
-	fmt.Println(reflect.DeepEqual(tree1, tree2))
+	tree := tree.BuildTree(index.GetIndex())
+
+	fmt.Println(tree)
+	files.WriteTree(tree)
 
 	// get current index
 	// build tree

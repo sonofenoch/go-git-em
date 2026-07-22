@@ -7,3 +7,5 @@ gge
 
 # .gogit files
 .gogit
+.gogit/objects
+.gogit/index
