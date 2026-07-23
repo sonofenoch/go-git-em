@@ -45,9 +45,9 @@ type GitConfig struct {
 	Branch []Branch `json:"branch"`
 }
 
-var config *GitConfig = nil
+var Config *GitConfig = nil
 
-func Read() (*GitConfig, error) {
+func read() (*GitConfig, error) {
 	var err error
 	config, err := os.Open(".gogit/config")
 	if err != nil {
@@ -69,13 +69,13 @@ func Read() (*GitConfig, error) {
 	return &gitconfig, nil
 }
 
-func GetConfig() (*GitConfig, error) {
+func GetConfig() error {
 	var err error
-	if config == nil {
-		config, err = Read()
+	if Config == nil {
+		Config, err = read()
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
-	return config, nil
+	return nil
 }

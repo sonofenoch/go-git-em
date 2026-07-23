@@ -2,7 +2,7 @@ package files
 
 import (
 	"bytes"
-	"crypto/sha256"
+	"crypto/sha1"
 	"fmt"
 	"io"
 	"os"
@@ -10,7 +10,7 @@ import (
 
 func GenerateHash(data []byte) (string, error) {
 	reader := bytes.NewReader(data)
-	hasher := sha256.New()
+	hasher := sha1.New()
 	if _, err := io.Copy(hasher, reader); err != nil {
 		return "", fmt.Errorf("could not copy bytes to hasher: %w", err)
 	}

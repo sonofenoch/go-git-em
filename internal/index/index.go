@@ -23,9 +23,9 @@ func GenerateEntry(path, hash string, stage int) (*IndexEntry, error) {
 	}
 	var mode string
 	if fi.IsDir() {
-		mode = "0400000"
+		mode = "400000"
 	} else {
-		mode = fmt.Sprintf("0100%o", fi.Mode().Perm())
+		mode = fmt.Sprintf("100%o", fi.Mode().Perm())
 	}
 
 	ie := IndexEntry{

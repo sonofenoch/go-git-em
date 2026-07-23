@@ -5,32 +5,18 @@ import (
 	"compress/zlib"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/sonofenoch/go-git-em/internal/tree"
 )
 
-func WriteBlob(filename string) (string, error) {
-	// open input file & read into bytes
-	input, err := os.Open(filename)
-	if err != nil {
-		return "", fmt.Errorf("could not open %s to compress: %w", filename, err)
-	}
-	defer input.Close()
-	file_bytes, err := io.ReadAll(input)
-	if err != nil {
-		return "", fmt.Errorf("could not read the input file into bytes")
-	}
+func WriteObject(object_type string, payload []byte) (string, error) {
+	var object bytes.Buffer
+	fmt.Fprintf(&object, "%s %d\x00", object_type, len(payload))
+	object.Write(payload)
+	object_bytes := object.Bytes()
 
-	// build object content
-	var b bytes.Buffer
-
-	fmt.Fprintf(&b, "blob %d\x00", len(file_bytes))
-	b.Write(file_bytes)
-	b_bytes := b.Bytes()
-
-	hash, err := GenerateHash(b_bytes)
+	hash, err := GenerateHash(object_bytes)
 	if err != nil {
 		return "", err
 	}
@@ -42,15 +28,11 @@ func WriteBlob(filename string) (string, error) {
 		return "", fmt.Errorf("%s does not exist and could not be created: %w", output_dir, err)
 	}
 	output_filename := output_dir + "/" + hash[2:]
-	_, err = os.Stat(output_filename)
-	if !os.IsNotExist(err) {
-		// if the file already exists, we can exit early.
-		return "", nil
-	} else if err != nil && os.IsExist(err) {
-		return "", fmt.Errorf("could not stat %s: %w", filename, err)
-	}
 
 	// open output file and create writer
+	if _, err := os.Stat(output_filename); err == nil {
+		return hash, nil
+	}
 	output, err := os.OpenFile(output_filename, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
 	if err != nil {
 		return "", fmt.Errorf("could not create and open compressed file %s: %w", output_filename, err)
@@ -61,55 +43,59 @@ func WriteBlob(filename string) (string, error) {
 	defer w.Close()
 
 	// compress file and flush
-	_, err = io.Copy(w, bytes.NewReader(b_bytes))
+	_, err = w.Write(object_bytes)
+	if err != nil {
+		return "", fmt.Errorf("could not write %s to object registry", object_type)
+	}
 
-	return hash, nil
+	return hash, err
+
 }
 
-func WriteTree(tree *tree.Tree) error {
-	var pb bytes.Buffer
+func WriteBlob(filename string) (string, error) {
+	// open input file & read into bytes
+	payload, err := os.ReadFile(filename)
+	if err != nil {
+		return "", fmt.Errorf("could not read the input file into bytes")
+	}
+	hash, err := WriteObject("blob", payload)
+	return hash, err
+}
+
+func WriteTree(tree *tree.Tree) (string, error) {
+	var payload bytes.Buffer
 	for _, entry := range tree.Entries {
 		hash_bytes, err := hex.DecodeString(entry.Hash)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
-		fmt.Fprintf(&pb, "%s ", entry.FileMode)
-		pb.WriteString(entry.Filename)
-		pb.WriteString("\x00")
-		pb.Write(hash_bytes)
+		fmt.Fprintf(&payload, "%s ", entry.FileMode)
+		payload.WriteString(entry.Filename)
+		payload.WriteString("\x00")
+		payload.Write(hash_bytes)
 	}
-	buffer_len := pb.Len()
-	var b bytes.Buffer
-	fmt.Fprintf(&b, "tree %d\x00", buffer_len)
-	b.Write(pb.Bytes())
-	hash, err := GenerateHash(b.Bytes())
-	fmt.Println(hash)
-	if err != nil {
-		return err
+	payload_bytes := payload.Bytes()
+
+	hash, err := WriteObject("tree", payload_bytes)
+	return hash, err
+}
+
+func WriteCommit(commit_message string, tree_hash string, parents []string, author string, committer string) (string, error) {
+	var payload bytes.Buffer
+	fmt.Fprintf(&payload, "tree %s\n", tree_hash)
+	for _, parent := range parents {
+		fmt.Fprintf(&payload, "parent %s\n", parent)
 	}
-	// verify output path
-	output_dir := fmt.Sprintf("%s/%s", ".gogit/objects", hash[0:2])
-	err = CreatePathIfNotExists(output_dir)
-	if err != nil {
-		return fmt.Errorf("%s does not exist and could not be created: %w", output_dir, err)
-	}
-	output_filename := output_dir + "/" + hash[2:]
 
-	// open output file and create writer
-	output, err := os.OpenFile(output_filename, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
-	if err != nil {
-		return fmt.Errorf("could not create and open compressed file %s: %w", output_filename, err)
-	}
-	defer output.Close()
+	fmt.Fprintf(&payload, "author %s\n", author)
+	fmt.Fprintf(&payload, "committer %s\n\n", committer)
 
-	w := zlib.NewWriter(output)
-	defer w.Close()
+	fmt.Fprint(&payload, commit_message)
 
-	// compress file and flush
-	_, err = io.Copy(w, bytes.NewReader(b.Bytes()))
+	payload_bytes := payload.Bytes()
 
-	return nil
-
+	hash, err := WriteObject("commit", payload_bytes)
+	return hash, err
 }
 
 func CreatePathIfNotExists(path string) error {

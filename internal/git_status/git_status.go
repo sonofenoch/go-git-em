@@ -9,16 +9,12 @@ import (
 
 	"github.com/sonofenoch/go-git-em/internal/git_config"
 	"github.com/sonofenoch/go-git-em/internal/index"
+	"github.com/sonofenoch/go-git-em/internal/repo"
 )
 
 var NothingToCommit = errors.New("nothing to commit, working tree clean")
 
 func Status() error {
-	config, err := git_config.GetConfig()
-	if err != nil {
-		return err
-	}
-
 	i, err := index.Read()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -64,22 +60,37 @@ func Status() error {
 		return err
 	}
 
-	fmt.Printf("on branch %s\n", config.Init.DefaultBranch)          // TODO: make global branch
-	fmt.Printf("your branch is {?UPTODATE?} with origin/master\n\n") // TODO: make remote
+	if repo.Repo_info != nil {
+		fmt.Printf("no commits yet\n\n")
+		fmt.Printf("on branch %s\n", repo.Repo_info.Branch)
+	} else {
+		fmt.Printf("on branch %s\n", git_config.Config.Init.DefaultBranch)
+		fmt.Printf("your branch is {?UPTODATE?} with origin/master\n\n") // TODO: actually do a comparison
+	}
+
+	if len(staged) == 0 && len(unstaged) == 0 && len(untracked) == 0 {
+		fmt.Printf("nothing to commit (create/copy files and use \"gge add\" to track)")
+		return nil
+	}
 
 	fmt.Printf("Changes to be committed:\n\n")
 	for path, status := range staged {
 		fmt.Printf("\t%s:\t%s\n", status, path)
 	}
 
-	fmt.Printf("\nChanges not staged for commit:\n\n")
-	for path, status := range unstaged {
-		fmt.Printf("\t%s:\t%s\n", status, path)
+	if len(unstaged) > 0 {
+		fmt.Printf("\nChanges not staged for commit:\n\n")
+		for path, status := range unstaged {
+			fmt.Printf("\t%s:\t%s\n", status, path)
+		}
 	}
 
-	fmt.Printf("\nUntracked files:\n\n")
-	for _, path := range untracked {
-		fmt.Printf("\t%s\n", path)
+	if len(untracked) > 0 {
+		fmt.Printf("\nUntracked files:\n\n")
+		for _, path := range untracked {
+			fmt.Printf("\t%s\n", path)
+		}
 	}
+
 	return nil
 }
