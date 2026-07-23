@@ -84,7 +84,11 @@ func main() {
 				panic(err)
 			}
 			for _, branch := range branches {
-				fmt.Println(branch)
+				if repo.Repo_info != nil && branch == repo.Repo_info.Branch {
+					fmt.Printf("* %s\n", branch)
+				} else {
+					fmt.Println(branch)
+				}
 			}
 		} else if len(os.Args) == 3 {
 			err := git_branch.Add_branch(os.Args[2])

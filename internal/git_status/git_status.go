@@ -61,9 +61,9 @@ func Status() error {
 	}
 
 	if repo.Repo_info != nil {
-		fmt.Printf("no commits yet\n\n")
 		fmt.Printf("on branch %s\n", repo.Repo_info.Branch)
 	} else {
+		fmt.Printf("no commits yet\n\n")
 		fmt.Printf("on branch %s\n", git_config.Config.Init.DefaultBranch)
 		fmt.Printf("your branch is {?UPTODATE?} with origin/master\n\n") // TODO: actually do a comparison
 	}
